@@ -1,0 +1,186 @@
+
+./
+├── app/
+│   ├── (auth)/
+│   │   ├── login/
+│   │   │   └── page.tsx
+│   │   └── register/
+│   ├── (dashboard)/
+│   │   ├── analytics/
+│   │   │   ├── page/
+│   │   │   └── page.tsx
+│   │   ├── chat/
+│   │   │   ├── page/
+│   │   │   └── page.tsx
+│   │   ├── diary/
+│   │   │   ├── page/
+│   │   │   └── page.tsx
+│   │   ├── layout/
+│   │   ├── settings/
+│   │   │   ├── page/
+│   │   │   └── page.tsx
+│   │   └── layout.tsx
+│   ├── api/
+│   │   ├── auth/
+│   │   │   └── [...nextauth]/
+│   │   ├── chat/
+│   │   ├── package.json
+│   │   └── turbo.json
+│   ├── chat/
+│   │   └── page.tsx
+│   ├── layout.tsx
+│   └── page.tsx
+├── apps/
+│   ├── api/
+│   │   ├── src/
+│   │   │   ├── lib/
+│   │   │   │   └── prompts/
+│   │   │   │       └── systemPrompt.ts
+│   │   │   ├── modules/
+│   │   │   │   ├── auth/
+│   │   │   │   │   ├── dto/
+│   │   │   │   │   │   ├── login.dto.ts
+│   │   │   │   │   │   └── register.dto.ts
+│   │   │   │   │   ├── guards/
+│   │   │   │   │   │   └── jwt-auth.guard.ts
+│   │   │   │   │   ├── strategies/
+│   │   │   │   │   │   └── jwt.strategy.ts
+│   │   │   │   │   ├── auth.controller.ts
+│   │   │   │   │   ├── auth.module.ts
+│   │   │   │   │   └── auth.service.ts
+│   │   │   │   ├── chat/
+│   │   │   │   │   ├── dto/
+│   │   │   │   │   │   ├── chat-request.dto.ts
+│   │   │   │   │   │   ├── chat-response.dto.ts
+│   │   │   │   │   │   └── chat.dto.ts
+│   │   │   │   │   ├── repositories/
+│   │   │   │   │   │   └── chat.repository.ts
+│   │   │   │   │   ├── chat.controller.ts
+│   │   │   │   │   ├── chat.module.ts
+│   │   │   │   │   └── chat.service.ts
+│   │   │   │   ├── diary/
+│   │   │   │   │   ├── dto/
+│   │   │   │   │   │   └── diary.dto.ts
+│   │   │   │   │   ├── diary.controller.ts
+│   │   │   │   │   ├── diary.module.ts
+│   │   │   │   │   └── diary.service.ts
+│   │   │   │   ├── payments/
+│   │   │   │   │   └── payments.module.ts
+│   │   │   │   └── users/
+│   │   │   │       ├── dto/
+│   │   │   │       ├── users.controller.ts
+│   │   │   │       ├── users.module.ts
+│   │   │   │       └── users.service.ts
+│   │   │   ├── prisma/
+│   │   │   │   ├── prisma.module.ts
+│   │   │   │   └── prisma.service.ts
+│   │   │   ├── shared/
+│   │   │   │   └── prisma/
+│   │   │   │       ├── prisma.module.ts
+│   │   │   │       └── prisma.service.ts
+│   │   │   ├── app.module.ts
+│   │   │   └── main.ts
+│   │   ├── .env
+│   │   ├── nest-cli.json
+│   │   └── package.json
+│   └── web/
+│       ├── app/
+│       │   ├── chat/
+│       │   │   ├── layout.tsx
+│       │   │   ├── page.tsx
+│       │   │   └── systemPrompt.tsx
+│       │   ├── layout.tsx
+│       │   └── page.tsx
+│       ├── components/
+│       │   └── Sidebar.tsx
+│       ├── lib/
+│       │   └── api.ts
+│       ├── next-env.d.ts
+│       ├── package.json
+│       └── turbo.json
+├── backup_code_155013/
+│   ├── app/
+│   │   ├── (auth)/
+│   │   │   ├── login/
+│   │   │   │   └── page.tsx
+│   │   │   └── register/
+│   │   ├── (dashboard)/
+│   │   │   ├── analytics/
+│   │   │   │   ├── page/
+│   │   │   │   └── page.tsx
+│   │   │   ├── chat/
+│   │   │   │   ├── page/
+│   │   │   │   └── page.tsx
+│   │   │   ├── diary/
+│   │   │   │   ├── page/
+│   │   │   │   └── page.tsx
+│   │   │   ├── layout/
+│   │   │   ├── settings/
+│   │   │   │   ├── page/
+│   │   │   │   └── page.tsx
+│   │   │   └── layout.tsx
+│   │   ├── api/
+│   │   │   ├── auth/
+│   │   │   │   └── [...nextauth]/
+│   │   │   └── chat/
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── components/
+│   │   ├── auth/
+│   │   ├── chat/
+│   │   │   └── ChatInterface.tsx
+│   │   ├── dashboard/
+│   │   ├── diary/
+│   │   ├── layout/
+│   │   │   ├── DashboardHeader.tsx
+│   │   │   └── DashboardSidebar.tsx
+│   │   ├── ui/
+│   │   └── providers.tsx
+│   ├── lib/
+│   │   ├── api/
+│   │   ├── constants/
+│   │   ├── prompts/
+│   │   │   └── systemPrompt.ts
+│   │   └── utils/
+│   └── public/
+├── components/
+│   ├── auth/
+│   ├── chat/
+│   │   └── ChatInterface.tsx
+│   ├── dashboard/
+│   ├── diary/
+│   ├── layout/
+│   │   ├── DashboardHeader.tsx
+│   │   └── DashboardSidebar.tsx
+│   ├── ui/
+│   └── providers.tsx
+├── docker/
+│   └── docker-compose.yml
+├── hooks/
+├── lib/
+│   ├── api/
+│   ├── constants/
+│   ├── prompts/
+│   │   └── systemPrompt.ts
+│   └── utils/
+├── prisma/
+│   ├── schema_old.prisma
+│   └── schema.prisma
+├── public/
+├── src/
+│   ├── app/
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── prisma/
+│   │   ├── prisma.module.ts
+│   │   └── prisma.service.ts
+│   ├── app.module.ts
+│   └── main.ts
+├── store/
+├── types/
+├── .env
+├── nest-cli.json
+├── next-env.d.ts
+├── next.config.ts
+├── package.json
+└── turbo.json
