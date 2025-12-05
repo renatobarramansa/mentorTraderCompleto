@@ -34,3 +34,50 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+Quando der problema no prisma, instalar a versão anterior
+npm install prisma@6 @prisma/client@6
+
+****EXECUTAR O PROJETO***
+PASSO 1 : Executar o docker no windows
+
+PASSO 2: INICIAR O BANCO DE DADOS
+bash
+# Na raiz do projeto (C:\mentor-trader-completo)
+docker-compose -f docker/docker-compose.yml up -d
+
+PASSO 3: CONFIGURAR PRISMA
+# Gerar Prisma Client
+npx prisma generate
+
+# Sincronizar banco de dados
+npx prisma db push
+
+PASSO 4: INICIAR BACKEND (NestJS)
+# Abra um novo terminal/Tab
+cd C:\mentor-trader-completo\apps\api
+npm run start:dev
+# Aguarde: http://localhost:3333
+
+PASSO 5: INICIAR FRONTEND (Next.js)
+# Abra outro terminal/Tab
+cd apps/web
+npm run dev
+# Acesse: http://localhost:3000
+
+PASSO 6: VERIFICAR TUDO
+PostgreSQL: Rodando via Docker (porta 5432)
+
+Backend API: http://localhost:3333/api ✅
+
+Frontend: http://localhost:3000 ✅
+
+Prisma Studio: http://localhost:5555 ✅ (opcional: npx prisma studio)
+
+COMANDOS IMPORTANTES DO PRISMA
+npx prisma generate (REFAZER AS TABELAS)
+npx prisma db push (SINCRONIZAR O BANCO)
+
+
+PARA MOSTRAR A ESTRUTURA DE PASTAS E DIRETOÓRIOS
+Na raiz do projeto executar node tree.js
