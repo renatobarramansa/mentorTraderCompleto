@@ -72,7 +72,7 @@ Backend API: http://localhost:3333/api ✅
 
 Frontend: http://localhost:3000 ✅
 
-Prisma Studio: http://localhost:5555 ✅ (opcional: npx prisma studio)
+Prisma Studio(versão prisma 7): npx prisma studio --config .\prisma\prisma.config.ts
 
 COMANDOS IMPORTANTES DO PRISMA
 npx prisma generate (REFAZER AS TABELAS)

@@ -1,9 +1,37 @@
-﻿import { Injectable, NotFoundException } from '@nestjs/common';
+﻿import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma/prisma.service';
 
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
+
+  async create(userData: {
+    email: string;
+    password: string;
+    name?: string;
+  }) {
+    const existingUser = await this.findByEmail(userData.email);
+    
+    if (existingUser) {
+      throw new ConflictException('Email já está em uso');
+    }
+
+    return this.prisma.user.create({
+      data: userData,
+    });
+  }
+
+  async findByEmail(email: string) {
+    return this.prisma.user.findUnique({
+      where: { email },
+    });
+  }
+
+  async findById(id: string) {
+    return this.prisma.user.findUnique({
+      where: { id },
+    });
+  }
   
   // PERFIL DO USUÁRIO
   async getProfile(userId: string) {

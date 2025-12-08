@@ -1,38 +1,24 @@
-﻿// app/page.tsx
-import Link from "next/link";
+﻿"use client";
 
-export default function Home() {
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+
+export default function HomePage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Redirecionar direto para login
+    router.push("/auth/login");
+  }, []);
+
   return (
-    <div style={{ padding: "40px", textAlign: "center" }}>
-      <h1>Mentor Trader</h1>
-      <p>Sistema de mentoramento para traders</p>
-      <div style={{ marginTop: "30px" }}>
-        <Link 
-          href="/auth/login" 
-          style={{ 
-            padding: "12px 24px", 
-            background: "#0070f3", 
-            color: "white", 
-            textDecoration: "none",
-            borderRadius: "4px",
-            marginRight: "10px"
-          }}
-        >
-          Entrar
-        </Link>
-        <Link 
-          href="/dashboard" 
-          style={{ 
-            padding: "12px 24px", 
-            background: "#555", 
-            color: "white", 
-            textDecoration: "none",
-            borderRadius: "4px"
-          }}
-        >
-          Dashboard
-        </Link>
-      </div>
+    <div style={{ 
+      display: "flex", 
+      justifyContent: "center", 
+      alignItems: "center", 
+      height: "100vh" 
+    }}>
+      <p>Redirecionando para login...</p>
     </div>
   );
 }
