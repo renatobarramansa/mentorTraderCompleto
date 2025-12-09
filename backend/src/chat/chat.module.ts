@@ -1,12 +1,11 @@
+// backend/src/chat/chat.module.ts
 import { Module } from '@nestjs/common';
 import { ChatController } from './chat.controller';
 import { ChatService } from './chat.service';
-import { AnthropicModule } from '../anthropic/anthropic.module';
+import { AnthropicService } from '../anthropic/anthropic.service';
 
 @Module({
-  imports: [AnthropicModule],
   controllers: [ChatController],
-  providers: [ChatService],
-  exports: [ChatService],
+  providers: [ChatService, AnthropicService],
 })
 export class ChatModule {}

@@ -109,7 +109,8 @@
 │   └── package.json
 ├── components/
 │   ├── chat/
-│   │   └── ChatInterface.tsx
+│   │   ├── ChatInterface.tsx
+│   │   └── MessageContent.tsx
 │   ├── layout/
 │   │   ├── DashboardHeader.tsx
 │   │   └── DashboardSidebar.tsx
@@ -130,11 +131,19 @@
 │   │   └── page.tsx
 │   ├── components/
 │   │   ├── auth/
+│   │   ├── chat/
+│   │   │   ├── ChatInterface.tsx
+│   │   │   └── MessageContent.tsx
 │   │   ├── dashboard/
+│   │   ├── diary/
+│   │   │   └── TradeDiary.tsx
 │   │   ├── layout/
+│   │   │   ├── ChatSidebar.tsx
 │   │   │   ├── DashboardHeader.tsx
 │   │   │   ├── DashboardSidebar.tsx
 │   │   │   └── Sidebar.tsx
+│   │   ├── statistics/
+│   │   │   └── Statistics.tsx
 │   │   ├── ui/
 │   │   └── providers.tsx
 │   ├── lib/

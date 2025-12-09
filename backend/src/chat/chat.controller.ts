@@ -1,39 +1,46 @@
-import { Controller, Post, Body, Logger } from '@nestjs/common';
+import { Controller, Post, Body, Get } from '@nestjs/common';
 import { ChatService } from './chat.service';
-import { ChatRequestDto } from './dto/chat-request.dto';
-import { ChatResponseDto } from './dto/chat-response.dto';
 
-@Controller('chat')
+@Controller('chat')  // REMOVI 'api/' daqui, pois j� tem no global prefix
 export class ChatController {
-  private readonly logger = new Logger(ChatController.name);
-
   constructor(private readonly chatService: ChatService) {}
 
-  @Post()
-  async handleChat(@Body() chatRequest: ChatRequestDto): Promise<ChatResponseDto> {
-    this.logger.log(`Recebida requisição de chat - Conversação: ${chatRequest.conversationId || 'Nova'}`);
-    
-    // Log para debug
-    this.logger.debug({
-      messageLength: chatRequest.message?.length || 0,
-      hasSystemPrompt: !!chatRequest.systemPrompt,
-      conversationId: chatRequest.conversationId,
-    });
-
-    const response = await this.chatService.processChat(chatRequest);
-    
-    this.logger.log(`Resposta gerada - Tamanho: ${response.content.length} caracteres`);
-    
-    return response;
+  @Get('health')
+  healthCheck(): object {
+    return {
+      status: 'online',
+      timestamp: new Date().toISOString(),
+      service: 'mentor-trader-chat'
+    };
   }
 
-  @Post('test')
-  async testConnection(): Promise<{ status: string; message: string }> {
-    this.logger.log('Teste de conexão recebido');
+  @Post()
+  async chat(
+    @Body() body: { 
+      message: string; 
+      conversationId?: string;
+      traderName?: string;
+      traderLevel?: string;
+      useSystemPrompt?: boolean;
+    },
+  ) {
+    const response = await this.chatService.processMessage(
+      body.message,
+      body.conversationId,
+      body.traderName,
+      body.traderLevel,
+      body.useSystemPrompt ?? true,
+    );
     
     return {
-      status: 'success',
-      message: '✅ Backend NestJS está funcionando corretamente!',
+      content: response,
+      conversationId: body.conversationId || `conv_${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      metadata: {
+        traderName: body.traderName || 'trader',
+        traderLevel: body.traderLevel || 'intermediario',
+        useSystemPrompt: body.useSystemPrompt ?? true
+      }
     };
   }
 }

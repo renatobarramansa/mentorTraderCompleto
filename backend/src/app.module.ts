@@ -1,20 +1,10 @@
-﻿import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+﻿// backend/src/app.module.ts
+import { Module } from '@nestjs/common';
 import { ChatModule } from './chat/chat.module';
-import { AnthropicModule } from './anthropic/anthropic.module';
-import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: '.env',
-    }),
     ChatModule,
-    AnthropicModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

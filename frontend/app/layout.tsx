@@ -1,27 +1,27 @@
-﻿import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
-import Providers from "../components/providers"
-
-const inter = Inter({ subsets: ["latin"] })
+﻿// frontend/app/layout.tsx
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { ThemeProvider } from '../contexts/ThemeContext';
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "Mentor Trader",
-  description: "Sistema de trading",
-}
+  title: 'Mentor Trader',
+  description: 'Plataforma de análise e registro de trades',
+};
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="pt-BR" className="debug-css-loaded">
-      <body className={`${inter.className} debug-css-loaded`}>
-        <Providers>
+    <html lang="pt-BR" suppressHydrationWarning>
+      <body className={inter.className}>
+        <ThemeProvider>
           {children}
-        </Providers>
+        </ThemeProvider>
       </body>
     </html>
-  )
+  );
 }
