@@ -66,6 +66,18 @@
 │       └── turbo.json
 ├── backend/
 │   ├── src/
+│   │   ├── anthropic/
+│   │   │   ├── anthropic.module.ts
+│   │   │   └── anthropic.service.ts
+│   │   ├── chat/
+│   │   │   ├── dto/
+│   │   │   │   ├── interfaces/
+│   │   │   │   │   └── chat.interface.ts
+│   │   │   │   ├── chat-request.dto.ts
+│   │   │   │   └── chat-response.dto.ts
+│   │   │   ├── chat.controller.ts
+│   │   │   ├── chat.module.ts
+│   │   │   └── chat.service.ts
 │   │   ├── modules/
 │   │   │   ├── auth/
 │   │   │   │   ├── dto/
@@ -88,7 +100,9 @@
 │   │   ├── prisma/
 │   │   │   ├── prisma.module.ts
 │   │   │   └── prisma.service.ts
+│   │   ├── app.controller.ts
 │   │   ├── app.module.ts
+│   │   ├── app.service.ts
 │   │   └── main.ts
 │   ├── .env
 │   ├── nest-cli.json
@@ -106,21 +120,16 @@
 │   ├── app/
 │   │   ├── (dashboard)/
 │   │   │   ├── dashboard/
-│   │   │   │   ├── chat/
-│   │   │   │   │   └── page.tsx
 │   │   │   │   └── page.tsx
 │   │   │   ├── settings/
 │   │   │   └── layout.tsx
-│   │   ├── tailwind-test/
-│   │   │   └── page.tsx
-│   │   ├── teste-tailwind/
-│   │   │   └── page.tsx
+│   │   ├── api/
+│   │   │   └── chat/
+│   │   │       └── route.ts
 │   │   ├── layout.tsx
 │   │   └── page.tsx
 │   ├── components/
 │   │   ├── auth/
-│   │   ├── chat/
-│   │   │   └── ChatInterface.tsx
 │   │   ├── dashboard/
 │   │   ├── layout/
 │   │   │   ├── DashboardHeader.tsx
@@ -129,10 +138,10 @@
 │   │   ├── ui/
 │   │   └── providers.tsx
 │   ├── lib/
-│   │   ├── constants/
-│   │   ├── utils/
 │   │   └── systemPrompt.tsx
 │   ├── public/
+│   ├── scripts/
+│   │   └── test-integration.ts
 │   ├── store/
 │   ├── types/
 │   ├── next-env.d.ts
