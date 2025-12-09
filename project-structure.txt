@@ -93,34 +93,6 @@
 │   ├── .env
 │   ├── nest-cli.json
 │   └── package.json
-├── backup_code_155013/
-│   ├── app/
-│   │   ├── (auth)/
-│   │   │   └── login/
-│   │   │       └── page.tsx
-│   │   ├── (dashboard)/
-│   │   │   ├── analytics/
-│   │   │   │   └── page.tsx
-│   │   │   ├── chat/
-│   │   │   │   └── page.tsx
-│   │   │   ├── diary/
-│   │   │   │   └── page.tsx
-│   │   │   ├── settings/
-│   │   │   │   └── page.tsx
-│   │   │   └── layout.tsx
-│   │   ├── layout.tsx
-│   │   └── page.tsx
-│   ├── components/
-│   │   ├── chat/
-│   │   │   └── ChatInterface.tsx
-│   │   ├── layout/
-│   │   │   ├── DashboardHeader.tsx
-│   │   │   └── DashboardSidebar.tsx
-│   │   └── providers.tsx
-│   ├── lib/
-│   │   └── prompts/
-│   │       └── systemPrompt.ts
-│   └── public/
 ├── components/
 │   ├── chat/
 │   │   └── ChatInterface.tsx
@@ -132,28 +104,34 @@
 │   └── docker-compose.yml
 ├── frontend/
 │   ├── app/
-│   │   ├── auth/
-│   │   │   └── login/
-│   │   │       └── page.tsx
-│   │   ├── dashboard/
+│   │   ├── (dashboard)/
+│   │   │   ├── dashboard/
+│   │   │   │   ├── chat/
+│   │   │   │   │   └── page.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── settings/
+│   │   │   └── layout.tsx
+│   │   ├── tailwind-test/
+│   │   │   └── page.tsx
+│   │   ├── teste-tailwind/
 │   │   │   └── page.tsx
 │   │   ├── layout.tsx
 │   │   └── page.tsx
 │   ├── components/
 │   │   ├── auth/
 │   │   ├── chat/
+│   │   │   └── ChatInterface.tsx
 │   │   ├── dashboard/
-│   │   ├── diary/
 │   │   ├── layout/
 │   │   │   ├── DashboardHeader.tsx
+│   │   │   ├── DashboardSidebar.tsx
 │   │   │   └── Sidebar.tsx
 │   │   ├── ui/
 │   │   └── providers.tsx
-│   ├── hooks/
 │   ├── lib/
-│   │   ├── api/
 │   │   ├── constants/
-│   │   └── utils/
+│   │   ├── utils/
+│   │   └── systemPrompt.tsx
 │   ├── public/
 │   ├── store/
 │   ├── types/
@@ -181,6 +159,7 @@
 │   └── main.ts
 ├── .env
 ├── nest-cli.json
+├── next-env.d.ts
 ├── next.config.ts
 ├── package.json
 └── turbo.json

@@ -1,22 +1,42 @@
-﻿import { NestFactory } from "@nestjs/core";
-import { AppModule } from "./app.module";
+﻿import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // HABILITAR CORS - ESSENCIAL
+  // Enable CORS for frontend
   app.enableCors({
-    origin: "http://localhost:3000", // Frontend URL
+    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
   
-  app.setGlobalPrefix("api");
+  // Global validation pipe
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
+  
+  // Global prefix
+  app.setGlobalPrefix('api');
   
   const port = process.env.PORT || 3333;
   await app.listen(port);
-  console.log(`🚀 API rodando em: http://localhost:${port}`);
-  console.log(`✅ CORS habilitado para: http://localhost:3000`);
+  
+  console.log(`🚀 Backend NestJS rodando em: http://localhost:${port}`);
+  console.log(`📚 API Docs: http://localhost:${port}/api`);
+  console.log(`🌐 Frontend: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
 }
-bootstrap();
+
+bootstrap().catch((error) => {
+  console.error('💥 Falha ao iniciar o servidor:', error);
+  process.exit(1);
+});
