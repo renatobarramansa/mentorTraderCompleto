@@ -65,8 +65,11 @@
 │       ├── package.json
 │       └── turbo.json
 ├── backend/
+│   ├── prisma/
+│   │   └── schema.prisma
 │   ├── src/
 │   │   ├── anthropic/
+│   │   │   ├── anthropic.dto.ts
 │   │   │   ├── anthropic.module.ts
 │   │   │   └── anthropic.service.ts
 │   │   ├── chat/
@@ -78,6 +81,9 @@
 │   │   │   ├── chat.controller.ts
 │   │   │   ├── chat.module.ts
 │   │   │   └── chat.service.ts
+│   │   ├── lib/
+│   │   │   └── prompts/
+│   │   │       └── systemPrompt.tsx
 │   │   ├── modules/
 │   │   │   ├── auth/
 │   │   │   │   ├── dto/
@@ -106,7 +112,8 @@
 │   │   └── main.ts
 │   ├── .env
 │   ├── nest-cli.json
-│   └── package.json
+│   ├── package.json
+│   └── prisma.config.ts
 ├── components/
 │   ├── chat/
 │   │   ├── ChatInterface.tsx
@@ -144,8 +151,16 @@
 │   │   │   └── Sidebar.tsx
 │   │   ├── statistics/
 │   │   │   └── Statistics.tsx
+│   │   ├── theme/
+│   │   │   └── ThemeToggle.tsx
+│   │   ├── trader/
+│   │   │   └── TraderConfig.tsx
 │   │   ├── ui/
 │   │   └── providers.tsx
+│   ├── config/
+│   │   └── api.ts
+│   ├── contexts/
+│   │   └── ThemeContext.tsx
 │   ├── lib/
 │   │   └── systemPrompt.tsx
 │   ├── public/
