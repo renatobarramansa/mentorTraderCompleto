@@ -12,37 +12,50 @@ import {
   Plus,
   Trash2,
   Edit,
-  MoreVertical
 } from 'lucide-react';
 import ThemeToggle from '../../components/theme/ThemeToggle';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useChat } from '../../contexts/ChatContext';
 
-// Atualizar o tipo para incluir 'config'
 type ActiveTab = 'chat' | 'statistics' | 'diary' | 'config';
 
 interface ChatSidebarProps {
-  activeTab: ActiveTab; // Mudar para incluir 'config'
+  activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
-  conversations: Array<{ id: string; title: string; date: string }>;
-  selectedConversation: string | null;
-  onSelectConversation: (id: string) => void;
-  onNewConversation: () => void;
-  onDeleteConversation: (id: string) => void;
-  onEditConversation: (id: string) => void;
 }
 
 export default function ChatSidebar({
   activeTab,
   setActiveTab,
-  conversations,
-  selectedConversation,
-  onSelectConversation,
-  onNewConversation,
-  onDeleteConversation,
-  onEditConversation
 }: ChatSidebarProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { theme } = useTheme();
+  
+  // Usar o contexto do chat
+  const {
+    conversations,
+    activeConversationId,
+    switchConversation,
+    createNewConversation,
+    deleteConversation,
+    updateConversationTitle
+  } = useChat();
+
+  const handleEditConversation = (id: string) => {
+    const conversation = conversations.find(c => c.id === id);
+    if (conversation) {
+      const newTitle = prompt('Novo título:', conversation.title);
+      if (newTitle && newTitle.trim()) {
+        updateConversationTitle(id, newTitle.trim());
+      }
+    }
+  };
+
+  const handleDeleteConversation = (id: string) => {
+    if (confirm('Tem certeza que deseja deletar esta conversa?')) {
+      deleteConversation(id);
+    }
+  };
 
   return (
     <div
@@ -91,10 +104,10 @@ export default function ChatSidebar({
       </div>
 
       {/* Navegação principal */}
-      <div className="flex-1 p-4">
+      <div className="flex-1 p-4 overflow-y-auto">
         {/* Botão Novo Chat */}
         <button
-          onClick={onNewConversation}
+          onClick={createNewConversation}
           className={`
             w-full
             mb-6
@@ -166,7 +179,7 @@ export default function ChatSidebar({
                     rounded-lg
                     transition-all
                     duration-200
-                    ${selectedConversation === conv.id
+                    ${activeConversationId === conv.id
                       ? 'bg-gray-100 dark:bg-gray-800 ring-1 ring-gray-300 dark:ring-gray-700'
                       : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
                     }
@@ -174,27 +187,38 @@ export default function ChatSidebar({
                 >
                   <div className="flex items-center justify-between p-3">
                     <button
-                      onClick={() => onSelectConversation(conv.id)}
+                      onClick={() => switchConversation(conv.id)}
                       className="flex-1 text-left min-w-0"
                     >
                       <div className="font-medium text-sm text-gray-800 dark:text-gray-200 truncate">
                         {conv.title}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        {conv.date}
+                        {conv.timestamp.toLocaleDateString('pt-BR', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
                       </div>
                     </button>
                     
                     {/* Menu de ações */}
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
-                        onClick={() => onEditConversation(conv.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEditConversation(conv.id);
+                        }}
                         className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
                       >
                         <Edit className="w-3 h-3 text-gray-500 dark:text-gray-400" />
                       </button>
                       <button
-                        onClick={() => onDeleteConversation(conv.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteConversation(conv.id);
+                        }}
                         className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded text-red-500"
                       >
                         <Trash2 className="w-3 h-3" />

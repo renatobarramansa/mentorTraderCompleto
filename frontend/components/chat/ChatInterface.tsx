@@ -4,41 +4,17 @@
 import { useState, useRef, useEffect } from "react";
 import { Send, Bot, User, Loader2, Copy, Check } from "lucide-react";
 import { useTheme } from "../../contexts/ThemeContext";
-import { getApiUrl } from "../../config/api";
+import { useChat } from "../../contexts/ChatContext";
 import MessageContent from "./MessageContent";
 
-interface Message {
-  id: string;
-  content: string;
-  sender: "user" | "assistant";
-  timestamp: Date;
-}
-
-interface ChatInterfaceProps {
-  conversationId?: string;
-  traderName?: string;
-  traderLevel?: "iniciante" | "intermediario" | "avancado" | "profissional";
-}
-
-export default function ChatInterface({
-  conversationId,
-  traderName = "trader",
-  traderLevel = "intermediario",
-}: ChatInterfaceProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      content:
-        "Olá! Sou seu assistente de trading. Como posso ajudar você hoje?",
-      sender: "assistant",
-      timestamp: new Date(),
-    },
-  ]);
+export default function ChatInterface() {
   const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isDark } = useTheme();
+  
+  // Usar o contexto ao invés de estado local
+  const { messages, isLoading, sendMessage } = useChat();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -48,83 +24,14 @@ export default function ChatInterface({
     scrollToBottom();
   }, [messages]);
 
-  // frontend/components/chat/ChatInterface.tsx
-  // Localize a função handleSend e atualize a URL:
-
-  // frontend/components/chat/ChatInterface.tsx
-  // Atualize a função handleSend:
-
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: input,
-      sender: "user",
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    setIsLoading(true);
-
-    try {
-      const response = await fetch("http://localhost:3333/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: input,
-          conversationId: conversationId || "new",
-          traderName, // Adicionar nome do trader
-          traderLevel, // Adicionar nível do trader
-          // Se quiser usar sempre o system prompt, adicione:
-          useSystemPrompt: true,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("Resposta do backend:", data);
-
-      const responseContent = data.content;
-
-      if (!responseContent) {
-        throw new Error("Resposta do servidor sem conteúdo");
-      }
-
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: responseContent,
-        sender: "assistant",
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
-    } catch (error) {
-      console.error("Erro ao enviar mensagem:", error);
-
-      const errorMessage =
-        error instanceof Error
-          ? `Erro: ${error.message}`
-          : "Desculpe, houve um erro. Por favor, tente novamente.";
-
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: errorMessage,
-        sender: "assistant",
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
-    } finally {
-      setIsLoading(false);
-    }
+    const messageContent = input;
+    setInput(""); // Limpar input imediatamente
+    
+    // Enviar através do contexto
+    await sendMessage(messageContent);
   };
 
   const handleCopy = (content: string, messageId: string) => {
@@ -182,11 +89,23 @@ export default function ChatInterface({
 
       {/* Área de mensagens */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-gray-50 dark:bg-gray-900">
+        {messages.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <Bot className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-2">
+              Nenhuma mensagem ainda
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-500">
+              Comece uma conversa enviando uma mensagem
+            </p>
+          </div>
+        )}
+
         {messages.map((message) => (
           <div
             key={message.id}
             className={`flex gap-3 ${
-              message.sender === "user" ? "flex-row-reverse" : ""
+              message.role === "user" ? "flex-row-reverse" : ""
             }`}
           >
             {/* Avatar */}
@@ -197,7 +116,7 @@ export default function ChatInterface({
               rounded-full
               flex items-center justify-center
               ${
-                message.sender === "user"
+                message.role === "user"
                   ? "bg-primary-500 text-white"
                   : isDark
                   ? "bg-gradient-to-br from-gray-700 to-gray-800"
@@ -205,7 +124,7 @@ export default function ChatInterface({
               }
             `}
             >
-              {message.sender === "user" ? (
+              {message.role === "user" ? (
                 <User className="w-4 h-4" />
               ) : (
                 <Bot className="w-4 h-4 text-white" />
@@ -215,7 +134,7 @@ export default function ChatInterface({
             {/* Mensagem */}
             <div
               className={`flex flex-col max-w-[70%] ${
-                message.sender === "user" ? "items-end" : ""
+                message.role === "user" ? "items-end" : ""
               }`}
             >
               <div
@@ -223,7 +142,7 @@ export default function ChatInterface({
                 rounded-2xl
                 px-4 py-3
                 ${
-                  message.sender === "user"
+                  message.role === "user"
                     ? "bg-primary-500 text-white rounded-tr-none"
                     : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-tl-none"
                 }
@@ -233,7 +152,7 @@ export default function ChatInterface({
                 <MessageContent content={message.content} />
 
                 {/* Botão de copiar para mensagens do assistente */}
-                {message.sender === "assistant" && (
+                {message.role === "assistant" && (
                   <button
                     onClick={() => handleCopy(message.content, message.id)}
                     className={`
@@ -390,11 +309,14 @@ export default function ChatInterface({
             <button
               key={tip}
               onClick={() => setInput(tip)}
+              disabled={isLoading}
               className={`
                 text-xs
                 px-3 py-1.5
                 rounded-full
                 transition-colors
+                disabled:opacity-50
+                disabled:cursor-not-allowed
                 ${
                   isDark
                     ? "bg-gray-700 hover:bg-gray-600 text-gray-300"
