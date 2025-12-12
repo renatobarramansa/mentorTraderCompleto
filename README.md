@@ -81,3 +81,6 @@ npx prisma db push (SINCRONIZAR O BANCO)
 
 PARA MOSTRAR A ESTRUTURA DE PASTAS E DIRETOÓRIOS
 Na raiz do projeto executar node tree.js
+
+Corrigir com o claude
+C:\mentor-trader-completo\frontend\components\chat\MessageContent.tsx, nome do efeito highlighting
