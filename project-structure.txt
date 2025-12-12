@@ -83,7 +83,7 @@
 │   │   │   └── chat.service.ts
 │   │   ├── lib/
 │   │   │   └── prompts/
-│   │   │       └── systemPrompt.tsx
+│   │   │       └── systemPrompt.ts
 │   │   ├── modules/
 │   │   │   ├── auth/
 │   │   │   │   ├── dto/
@@ -106,6 +106,8 @@
 │   │   ├── prisma/
 │   │   │   ├── prisma.module.ts
 │   │   │   └── prisma.service.ts
+│   │   ├── utils/
+│   │   │   └── ntslValidator.ts
 │   │   ├── app.controller.ts
 │   │   ├── app.module.ts
 │   │   ├── app.service.ts
@@ -113,24 +115,14 @@
 │   ├── .env
 │   ├── nest-cli.json
 │   ├── package.json
-│   └── prisma.config.ts
-├── components/
-│   ├── chat/
-│   │   ├── ChatInterface.tsx
-│   │   └── MessageContent.tsx
-│   ├── layout/
-│   │   ├── DashboardHeader.tsx
-│   │   └── DashboardSidebar.tsx
-│   └── providers.tsx
+│   ├── prisma.config.ts
+│   ├── test-chat-formatting.ts
+│   ├── test-ntsl-simple.ts
+│   └── test-prompt.ts
 ├── docker/
 │   └── docker-compose.yml
 ├── frontend/
 │   ├── app/
-│   │   ├── (dashboard)/
-│   │   │   ├── dashboard/
-│   │   │   │   └── page.tsx
-│   │   │   ├── settings/
-│   │   │   └── layout.tsx
 │   │   ├── api/
 │   │   │   └── chat/
 │   │   │       └── route.ts
@@ -139,16 +131,15 @@
 │   ├── components/
 │   │   ├── auth/
 │   │   ├── chat/
+│   │   │   ├── conversations_temp/
+│   │   │   │   └── route.ts
 │   │   │   ├── ChatInterface.tsx
-│   │   │   └── MessageContent.tsx
-│   │   ├── dashboard/
+│   │   │   ├── MessageContent.tsx
+│   │   │   └── route.ts
 │   │   ├── diary/
 │   │   │   └── TradeDiary.tsx
 │   │   ├── layout/
-│   │   │   ├── ChatSidebar.tsx
-│   │   │   ├── DashboardHeader.tsx
-│   │   │   ├── DashboardSidebar.tsx
-│   │   │   └── Sidebar.tsx
+│   │   │   └── ChatSidebar.tsx
 │   │   ├── statistics/
 │   │   │   └── Statistics.tsx
 │   │   ├── theme/
@@ -160,6 +151,7 @@
 │   ├── config/
 │   │   └── api.ts
 │   ├── contexts/
+│   │   ├── ChatContext.tsx
 │   │   └── ThemeContext.tsx
 │   ├── lib/
 │   │   └── systemPrompt.tsx

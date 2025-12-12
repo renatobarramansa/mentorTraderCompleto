@@ -1,61 +1,74 @@
-﻿"use client";
+﻿// frontend/components/chat/MessageContent.tsx
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface MessageContentProps {
   content: string;
 }
 
-// Extrai blocos de código do texto
+// Extrai blocos de código do texto - VERSÃO ROBUSTA
 const extractCodeBlocks = (content: string): Array<{ type: 'text' | 'code', content: string, language?: string }> => {
   const blocks: Array<{ type: 'text' | 'code', content: string, language?: string }> = [];
   
-  // DEBUG: Log do conteúdo recebido
-  console.log('🔍 MessageContent - Conteúdo recebido:', content.substring(0, 200));
+  console.log('🔍 [MessageContent] Analisando conteúdo:', {
+    length: content.length,
+    preview: content.substring(0, 100),
+    hasBackticks: content.includes('```'),
+    hasNTSLKeywords: content.includes('input') || content.includes('BuyAtMarket')
+  });
   
-  const codeRegex = /```(\w+)?\n([\s\S]*?)```/g;
-  
+  // PRIMEIRO: Tentar encontrar blocos com backticks
+  const codeRegex = /```(ntsl|pascal|NTSL|Pascal)?\n([\s\S]*?)```/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
-  let matchCount = 0;
+  let blockCount = 0;
 
   while ((match = codeRegex.exec(content)) !== null) {
-    matchCount++;
-    console.log(`📦 Bloco ${matchCount} encontrado:`, {
+    blockCount++;
+    
+    console.log(`📦 [MessageContent] Bloco ${blockCount} encontrado com backticks:`, {
       language: match[1] || 'none',
-      codePreview: match[2].substring(0, 50) + '...'
+      preview: match[2].substring(0, 50) + '...',
+      position: match.index
     });
 
+    // Texto antes do bloco
     if (match.index > lastIndex) {
-      blocks.push({
-        type: 'text',
-        content: content.substring(lastIndex, match.index)
-      });
+      const textBefore = content.substring(lastIndex, match.index).trim();
+      if (textBefore) {
+        blocks.push({
+          type: 'text',
+          content: textBefore
+        });
+      }
     }
 
-    const language = match[1]?.toLowerCase() || 'text';
+    const rawLanguage = match[1]?.toLowerCase() || '';
     const codeContent = match[2].trim();
     
-    // Detectar NTSL automaticamente
-    const hasNTSLKeywords = codeContent.includes('BuyAtMarket') ||
-                           codeContent.includes('SellShortAtMarket') ||
-                           codeContent.includes('Media') ||
-                           codeContent.includes('IFR');
+    // DETECTAR automaticamente se é NTSL
+    const ntslKeywords = [
+      'BuyAtMarket', 'SellShortAtMarket', 'BuyToCoverAtMarket', 'SellToCoverAtMarket',
+      'Media(', 'IFR(', 'ADX(', 'MACD(', 'BollingerBands',
+      'TakeProfit(', 'StopLoss(', 'ConsoleLog('
+    ];
     
-    const hasNTSLStructure = codeContent.match(/^(input|var|begin)/im);
+    const hasNTSLKeywords = ntslKeywords.some(keyword => codeContent.includes(keyword));
+    const hasNTSLStructure = /^(input|var|begin)/im.test(codeContent);
+    const endsWithEndDot = /end\.\s*$/m.test(codeContent);
     
-    const isNTSL = language === 'ntsl' || 
-                   language === 'pascal' || 
-                   hasNTSLStructure ||
-                   hasNTSLKeywords;
+    const isDefinitelyNTSL = rawLanguage === 'ntsl' || rawLanguage === 'pascal';
+    const looksLikeNTSL = hasNTSLKeywords || hasNTSLStructure || endsWithEndDot;
     
-    const finalLanguage = isNTSL ? 'ntsl' : language;
+    const finalLanguage = isDefinitelyNTSL || looksLikeNTSL ? 'ntsl' : rawLanguage || 'text';
     
-    console.log(`✅ Bloco ${matchCount} classificado como:`, finalLanguage, {
-      originalLanguage: language,
+    console.log(`✅ [MessageContent] Bloco ${blockCount} classificado como: ${finalLanguage}`, {
+      rawLanguage,
       hasNTSLKeywords,
       hasNTSLStructure,
-      isNTSL
+      endsWithEndDot,
+      looksLikeNTSL
     });
     
     blocks.push({
@@ -67,25 +80,82 @@ const extractCodeBlocks = (content: string): Array<{ type: 'text' | 'code', cont
     lastIndex = codeRegex.lastIndex;
   }
 
-  if (matchCount === 0) {
-    console.warn('⚠️ Nenhum bloco de código encontrado!');
+  // SEGUNDO: Se não encontrou blocos com backticks, verificar se há código NTSL solto
+  if (blockCount === 0) {
+    console.log('🔄 [MessageContent] Nenhum bloco com backticks. Verificando código solto...');
+    
+    // Padrões para detectar código NTSL sem backticks
+    const ntslPatterns = [
+      /(input[\s\S]*?end\.)/i,                    // Bloco completo input...end.
+      /(var[\s\S]*?begin[\s\S]*?end\.)/i,         // Bloco completo var...begin...end.
+      /(begin[\s\S]*?end\.)/i                     // Bloco begin...end.
+    ];
+    
+    for (const pattern of ntslPatterns) {
+      const match = content.match(pattern);
+      if (match) {
+        const codeContent = match[0].trim();
+        const codeStart = content.indexOf(codeContent);
+        const codeEnd = codeStart + codeContent.length;
+        
+        console.log('⚠️ [MessageContent] Código NTSL encontrado SEM backticks!', {
+          preview: codeContent.substring(0, 50) + '...',
+          length: codeContent.length,
+          start: codeStart,
+          end: codeEnd
+        });
+        
+        // Texto antes do código
+        if (codeStart > 0) {
+          const textBefore = content.substring(0, codeStart).trim();
+          if (textBefore) {
+            blocks.push({ type: 'text', content: textBefore });
+          }
+        }
+        
+        // Código NTSL
+        blocks.push({
+          type: 'code',
+          content: codeContent,
+          language: 'ntsl'
+        });
+        
+        // Texto após o código
+        if (codeEnd < content.length) {
+          const textAfter = content.substring(codeEnd).trim();
+          if (textAfter) {
+            blocks.push({ type: 'text', content: textAfter });
+          }
+        }
+        
+        console.log(`📊 [MessageContent] Código extraído (${blocks.length} blocos)`);
+        return blocks;
+      }
+    }
+    
+    console.warn('⚠️ [MessageContent] Nenhum código NTSL identificado');
   }
 
+  // Adicionar texto restante após o último bloco de código
   if (lastIndex < content.length) {
+    const remainingText = content.substring(lastIndex).trim();
+    if (remainingText) {
+      blocks.push({
+        type: 'text',
+        content: remainingText
+      });
+    }
+  }
+
+  // Se não encontrou nada, retorna tudo como texto
+  if (blocks.length === 0 && content.trim()) {
     blocks.push({
       type: 'text',
-      content: content.substring(lastIndex)
+      content: content.trim()
     });
   }
 
-  if (blocks.length === 0) {
-    blocks.push({
-      type: 'text',
-      content
-    });
-  }
-
-  console.log(`📊 Total de blocos: ${blocks.length} (${blocks.filter(b => b.type === 'code').length} de código)`);
+  console.log(`📊 [MessageContent] Total de blocos: ${blocks.length} (${blocks.filter(b => b.type === 'code').length} de código)`);
 
   return blocks;
 };
@@ -104,7 +174,7 @@ const TextBlock: React.FC<{ content: string }> = ({ content }) => {
   };
 
   return (
-    <div className="whitespace-pre-wrap">
+    <div className="whitespace-pre-wrap text-gray-800 dark:text-gray-200">
       {content.split('\n').map((line, idx) => {
         const processedLine = processMarkdown(line);
         return (
@@ -148,7 +218,8 @@ const NTSLHighlighter: React.FC<{ line: string }> = ({ line }) => {
   
   function processLine(text: string, tokenArray: React.ReactNode[]) {
     const keywords = [
-      'input', 'var', 'begin', 'end', 'If', 'Then', 'Else', 'For', 'While', 'To', 'Do',
+      'input', 'var', 'begin', 'end', 
+      'If', 'Then', 'Else', 'For', 'While', 'To', 'Do',
       'Integer', 'Float', 'Double', 'Boolean', 'String', 'Array', 'Of',
       'BuyAtMarket', 'BuyLimit', 'BuyStop',
       'SellShortAtMarket', 'SellShortLimit', 'SellShortStop',
@@ -170,52 +241,69 @@ const NTSLHighlighter: React.FC<{ line: string }> = ({ line }) => {
       'TakeProfit', 'StopLoss'
     ];
     
-    const parts = text.split(/(\b(?:\w+)\b|["'].*?["']|\d+\.?\d*|:=|[(){}[\];:,<>=+\-*\/]|\s+)/g);
+    // Regex melhorada para tokenização
+    const tokenRegex = /(\b(?:\w+)\b|:=|[-+*/=<>!]+|["'].*?["']|\d+\.?\d*|[(){}[\];:,]|\s+)/g;
+    const parts = text.match(tokenRegex) || [text];
     
     parts.forEach((part, idx) => {
       if (!part) return;
       
+      // Espaços
       if (/^\s+$/.test(part)) {
         tokenArray.push(<span key={`space-${idx}`}>{part}</span>);
       }
+      // Keywords (case-insensitive)
       else if (keywords.some(kw => kw.toLowerCase() === part.toLowerCase())) {
         tokenArray.push(
-          <span key={`keyword-${idx}`} className="text-blue-400 font-semibold">
+          <span key={`keyword-${idx}`} className="text-blue-400 dark:text-blue-300 font-semibold">
             {part}
           </span>
         );
       }
+      // Strings
       else if (/^["'].*["']$/.test(part)) {
         tokenArray.push(
-          <span key={`string-${idx}`} className="text-green-400">
+          <span key={`string-${idx}`} className="text-green-400 dark:text-green-300">
             {part}
           </span>
         );
       }
+      // Números
       else if (/^\d+\.?\d*$/.test(part)) {
         tokenArray.push(
-          <span key={`number-${idx}`} className="text-amber-400">
+          <span key={`number-${idx}`} className="text-amber-400 dark:text-amber-300">
             {part}
           </span>
         );
       }
+      // Operador de atribuição
       else if (part === ':=') {
         tokenArray.push(
-          <span key={`operator-${idx}`} className="text-pink-400">
+          <span key={`operator-${idx}`} className="text-pink-400 dark:text-pink-300">
             {part}
           </span>
         );
       }
-      else if (/^[(){}[\];:,<>=+\-*\/]$/.test(part)) {
+      // Outros operadores e pontuação
+      else if (/^[-+*/=<>!]+$/.test(part)) {
         tokenArray.push(
-          <span key={`punct-${idx}`} className="text-gray-300">
+          <span key={`operator2-${idx}`} className="text-purple-400 dark:text-purple-300">
             {part}
           </span>
         );
       }
+      // Pontuação
+      else if (/^[(){}[\];:,]$/.test(part)) {
+        tokenArray.push(
+          <span key={`punct-${idx}`} className="text-gray-300 dark:text-gray-400">
+            {part}
+          </span>
+        );
+      }
+      // Texto normal (identificadores, etc.)
       else {
         tokenArray.push(
-          <span key={`text-${idx}`} className="text-gray-100">
+          <span key={`text-${idx}`} className="text-gray-100 dark:text-gray-200">
             {part}
           </span>
         );
@@ -227,79 +315,121 @@ const NTSLHighlighter: React.FC<{ line: string }> = ({ line }) => {
 // Bloco de código com syntax highlighting
 const CodeBlock: React.FC<{ content: string; language?: string }> = ({ content, language = 'text' }) => {
   const [copied, setCopied] = useState(false);
+  const [showCopySuccess, setShowCopySuccess] = useState(false);
 
-  console.log('🎨 Renderizando CodeBlock:', { language, contentPreview: content.substring(0, 50) });
+  useEffect(() => {
+    console.log('🎨 [CodeBlock] Renderizando:', { 
+      language, 
+      lines: content.split('\n').length,
+      preview: content.substring(0, 30) + '...'
+    });
+  }, [content, language]);
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(content);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setShowCopySuccess(true);
+      
+      setTimeout(() => {
+        setShowCopySuccess(false);
+        setTimeout(() => setCopied(false), 300);
+      }, 2000);
     } catch (err) {
-      console.error('Erro ao copiar código:', err);
+      console.error('❌ [CodeBlock] Erro ao copiar:', err);
     }
   };
 
   const lines = content.split('\n');
-  const isNTSL = language === 'pascal' || language === 'ntsl';
-
-  console.log('🎨 CodeBlock configurado:', { isNTSL, language, lineCount: lines.length });
+  const isNTSL = language === 'ntsl' || language === 'pascal';
+  const lineCount = lines.length;
 
   return (
-    <div className="my-4 rounded-xl overflow-hidden border border-gray-700 shadow-lg">
+    <div className="my-6 rounded-xl overflow-hidden border border-gray-300 dark:border-gray-700 shadow-lg shadow-gray-200 dark:shadow-gray-900 transition-all duration-300 hover:shadow-xl">
       {/* Cabeçalho */}
-      <div className="flex items-center justify-between bg-gray-900 px-4 py-3">
+      <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-900 px-4 py-3 border-b border-gray-300 dark:border-gray-700">
         <div className="flex items-center gap-3">
-          <div className="flex gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500"></div>
-            <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-            <div className="w-3 h-3 rounded-full bg-green-500"></div>
+          {/* Dots */}
+          <div className="flex gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-red-400 dark:bg-red-500"></div>
+            <div className="w-2.5 h-2.5 rounded-full bg-yellow-400 dark:bg-yellow-500"></div>
+            <div className="w-2.5 h-2.5 rounded-full bg-green-400 dark:bg-green-500"></div>
           </div>
           
-          <span className={`text-xs font-mono px-2 py-1 rounded ${
-            isNTSL ? 'bg-blue-800 text-blue-200' : 'bg-gray-800 text-gray-300'
+          {/* Badge de linguagem */}
+          <span className={`text-xs font-mono font-semibold px-2.5 py-1 rounded-md ${
+            isNTSL 
+              ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800' 
+              : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700'
           }`}>
             {isNTSL ? 'NTSL' : language.toUpperCase()}
           </span>
           
+          {/* Info */}
           {isNTSL && (
-            <span className="text-sm text-gray-400">
-              ✨ Syntax Highlighting Ativo
-            </span>
+            <div className="flex items-center gap-2">              
+              <span className="w-1 h-1 rounded-full bg-gray-400"></span>
+              <span className="text-xs text-gray-600 dark:text-gray-400">
+                Copie e cole no editor de estratégias
+              </span>
+            </div>
           )}
         </div>
         
-        <button
-          onClick={handleCopy}
-          className="flex items-center gap-2 px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-xs font-medium transition-colors"
-        >
-          {copied ? (
-            <>
-              <span>✅</span>
-              <span>Copiado!</span>
-            </>
-          ) : (
-            <>
-              <span>📋</span>
-              <span>Copiar</span>
-            </>
+        {/* Botão Copiar */}
+        <div className="relative">
+          <button
+            onClick={handleCopy}
+            disabled={copied}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+              copied
+                ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800'
+                : 'bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700'
+            }`}
+          >
+            {copied ? (
+              <>
+                <span className="text-sm">✅</span>
+                <span>Copiado!</span>
+              </>
+            ) : (
+              <>
+                <span className="text-sm">📋</span>
+                <span>Copiar</span>
+              </>
+            )}
+          </button>
+          
+          {/* Tooltip de sucesso */}
+          {showCopySuccess && (
+            <div className="absolute -top-10 right-0 bg-green-500 text-white text-xs px-2 py-1.5 rounded shadow-lg animate-fade-in-out">
+              ✅ Código copiado para a área de transferência!
+            </div>
           )}
-        </button>
+        </div>
       </div>
       
       {/* Código */}
-      <div className="bg-gray-950 text-gray-100 p-4 overflow-x-auto">
+      <div className="bg-gray-50 dark:bg-gray-950 text-gray-800 dark:text-gray-100 p-0 overflow-x-auto">
         <div className="font-mono text-sm">
           {lines.map((line, lineIndex) => (
-            <div key={lineIndex} className="flex hover:bg-gray-900/50">
-              <span className="text-gray-500 text-xs w-8 text-right pr-3 select-none leading-6">
+            <div 
+              key={lineIndex} 
+              className={`flex hover:bg-gray-100 dark:hover:bg-gray-900/50 transition-colors ${
+                lineIndex % 2 === 0 ? 'bg-gray-50/50 dark:bg-gray-950/50' : ''
+              }`}
+            >
+              {/* Número da linha */}
+              <span className="text-gray-400 dark:text-gray-600 text-xs w-10 text-right pr-3 pl-2 select-none leading-6 border-r border-gray-200 dark:border-gray-800">
                 {lineIndex + 1}
               </span>
-              <span className="flex-1 leading-6">
+              
+              {/* Conteúdo da linha */}
+              <span className="flex-1 leading-6 pl-3 pr-4">
                 {isNTSL ? (
                   <NTSLHighlighter line={line} />
                 ) : (
-                  <span className="text-gray-100">{line || '\u00A0'}</span>
+                  <span className="text-gray-800 dark:text-gray-200">{line || '\u00A0'}</span>
                 )}
               </span>
             </div>
@@ -308,21 +438,23 @@ const CodeBlock: React.FC<{ content: string; language?: string }> = ({ content, 
       </div>
       
       {/* Rodapé */}
-      <div className="bg-gray-900 px-4 py-2 border-t border-gray-800">
-        <div className="flex justify-between items-center text-xs text-gray-400">
-          <div className="flex items-center gap-2">
-            <span>{lines.length} linhas</span>
+      <div className="bg-gray-100 dark:bg-gray-900 px-4 py-2 border-t border-gray-300 dark:border-gray-700">
+        <div className="flex justify-between items-center text-xs">
+          <div className="flex items-center gap-3 text-gray-600 dark:text-gray-400">
+            <span>{lineCount} linha{lineCount !== 1 ? 's' : ''}</span>
+            
             {isNTSL && (
               <>
-                <span>•</span>
-                <span className="text-blue-400">NTSL/Pascal</span>
+                <span className="w-1 h-1 rounded-full bg-gray-400"></span>
+                <span className="flex items-center gap-1">
+                  <span className={`w-2 h-2 rounded-full ${isNTSL ? 'bg-blue-500' : 'bg-green-500'}`}></span>
+                  <span>Texto no rodapé</span>
+                </span>
               </>
             )}
           </div>
-          <div className="flex items-center gap-1">
-            <span className={isNTSL ? 'text-blue-500' : 'text-green-500'}>●</span>
-            <span>{isNTSL ? 'Highlighting Ativo' : 'Pronto'}</span>
-          </div>
+          
+         
         </div>
       </div>
     </div>
@@ -331,27 +463,69 @@ const CodeBlock: React.FC<{ content: string; language?: string }> = ({ content, 
 
 // Componente principal
 const MessageContent: React.FC<MessageContentProps> = ({ content }) => {
-  console.log('🚀 MessageContent renderizado com', content.length, 'caracteres');
+  const [blocks, setBlocks] = useState<Array<{ type: 'text' | 'code', content: string, language?: string }>>([]);
   
-  const blocks = extractCodeBlocks(content);
+  useEffect(() => {
+    console.log('🚀 [MessageContent] Componente montado com conteúdo:', {
+      length: content.length,
+      hasBackticks: content.includes('```'),
+      preview: content.substring(0, 100)
+    });
+    
+    const extractedBlocks = extractCodeBlocks(content);
+    setBlocks(extractedBlocks);
+    
+    console.log('📊 [MessageContent] Blocos processados:', {
+      total: extractedBlocks.length,
+      codeBlocks: extractedBlocks.filter(b => b.type === 'code').length,
+      textBlocks: extractedBlocks.filter(b => b.type === 'text').length
+    });
+  }, [content]);
+
+  if (blocks.length === 0) {
+    return <div className="text-gray-500 dark:text-gray-400 italic">Carregando conteúdo...</div>;
+  }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {blocks.map((block, index) => {
+        const key = `${block.type}-${index}-${block.content.substring(0, 20).replace(/\s/g, '_')}`;
+        
         if (block.type === 'code') {
           return (
             <CodeBlock 
-              key={index} 
+              key={key}
               content={block.content} 
               language={block.language} 
             />
           );
         }
         
-        return <TextBlock key={index} content={block.content} />;
+        return <TextBlock key={key} content={block.content} />;
       })}
     </div>
   );
 };
 
 export default MessageContent;
+
+// Estilos CSS para animação
+const styles = `
+@keyframes fade-in-out {
+  0% { opacity: 0; transform: translateY(5px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(5px); }
+}
+
+.animate-fade-in-out {
+  animation: fade-in-out 2s ease-in-out forwards;
+}
+`;
+
+// Adiciona estilos ao documento
+if (typeof document !== 'undefined') {
+  const styleSheet = document.createElement("style");
+  styleSheet.innerText = styles;
+  document.head.appendChild(styleSheet);
+}

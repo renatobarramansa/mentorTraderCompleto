@@ -17,7 +17,9 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:format": "ts-node test-chat-formatting.ts",
+    "test:regex": "node -e \"const regex = /(^|\\\\n)(\\\\/\\\\/[^\\\\n]*\\\\n)?(input[\\\\s\\\\S]*?end\\\\.)(\\\\n|$)/gi; const text = 'input\\\\n    Periodo(20);\\\\nend.'; console.log('Teste:', regex.test(text) ? '✅ OK' : '❌ FAIL');\""
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.3",

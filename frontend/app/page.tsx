@@ -44,13 +44,15 @@ function MainContent() {
       case 'chat':
         return (
           <div className="h-full flex flex-col">
-            {/* Configuração do Trader no topo do chat */}
+              
             <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+             {/*
               <TraderConfig
                 traderName={traderName}
                 traderLevel={traderLevel}
                 onSave={handleSaveTraderConfig}
               />
+              */}
             </div>
             {/* Interface do Chat */}
             <div className="flex-1 overflow-hidden">
@@ -155,12 +157,12 @@ function MainContent() {
           text-gray-600 dark:text-gray-400
         ">
           <div className="flex items-center justify-center gap-6">
-            <span>© 2024 Mentor Trader</span>
+            <span>© 2025 Mentor Trader</span>
             <span className="hidden sm:inline">•</span>
             <span className="hidden sm:inline">Versão 1.0.0</span>
             <span className="hidden sm:inline">•</span>
             <span className="hidden sm:inline">
-              Desenvolvido com ❤️ para traders
+              Desenvolvido para desenvolvedores e traders NTSL
             </span>
           </div>
         </footer>
