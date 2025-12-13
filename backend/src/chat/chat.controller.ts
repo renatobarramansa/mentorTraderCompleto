@@ -1,7 +1,8 @@
 import { Controller, Post, Body, Get } from '@nestjs/common';
 import { ChatService } from './chat.service';
+import { SendMessageDto } from './chat.dto'; // Importar o DTO
 
-@Controller('chat')  // REMOVI 'api/' daqui, pois j� tem no global prefix
+@Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
@@ -15,7 +16,7 @@ export class ChatController {
   }
 
   @Post()
-  async chat(
+  async sendMessage(  // Renomear de 'chat' para 'sendMessage'
     @Body() body: { 
       message: string; 
       conversationId?: string;
@@ -24,22 +25,27 @@ export class ChatController {
       useSystemPrompt?: boolean;
     },
   ) {
-    const response = await this.chatService.processMessage(
-      body.message,
-      body.conversationId,
-      body.traderName,
-      body.traderLevel,
-      body.useSystemPrompt ?? true,
-    );
-    
-    return {
-      content: response,
+    // Criar DTO correto
+    const sendMessageDto: SendMessageDto = {
+      message: body.message,
       conversationId: body.conversationId || `conv_${Date.now()}`,
-      timestamp: new Date().toISOString(),
+      traderName: body.traderName,
+      traderLevel: body.traderLevel as any, // Cast se necessário
+    };
+    
+    // Chamar método correto com DTO
+    const result = await this.chatService.sendMessage(sendMessageDto);
+    
+    // Retornar resultado formatado
+    return {
+      content: result.message, // Extrair a mensagem do objeto
+      conversationId: result.conversationId,
+      timestamp: result.timestamp.toISOString(),
       metadata: {
         traderName: body.traderName || 'trader',
         traderLevel: body.traderLevel || 'intermediario',
-        useSystemPrompt: body.useSystemPrompt ?? true
+        useSystemPrompt: body.useSystemPrompt ?? true,
+        validationInfo: result.validationInfo // Incluir info de validação se existir
       }
     };
   }
